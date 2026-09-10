@@ -1,132 +1,131 @@
 # Codex Usage Watcher
 
-Utilidad **no oficial** para Windows que revisa periódicamente la página de uso de Codex en ChatGPT y envía alertas al celular cuando tus límites se acercan al agotamiento o a su próximo reinicio.
+Utilidad **no oficial** para Windows que revisa periódicamente la página de uso de Codex en ChatGPT y puede enviar alertas push al celular mediante **ntfy** cuando tus límites se acercan al agotamiento o a un reinicio.
 
-> No utiliza una API oficial de OpenAI para obtener los límites. Lee la interfaz web de Codex desde un perfil dedicado de Brave, por lo que un cambio futuro en esa interfaz puede requerir actualizar el parser.
+No utiliza una API oficial de OpenAI para obtener los límites. Lee la interfaz web de Codex desde un **perfil dedicado** de un navegador Chromium compatible, por lo que cambios futuros en esa interfaz pueden requerir actualizar el parser.
+
+## Navegadores compatibles
+
+- **Brave**
+- **Google Chrome**
+- **Microsoft Edge**
+
+El instalador intenta usar tu navegador predeterminado si es compatible. Si hay varios y no puede decidir, permite elegir durante la instalación.
+
+Cada navegador utiliza un perfil dedicado independiente en `runtime/browser_profiles/`, por lo que no interfiere con tu perfil habitual.
 
 ## ¿Para qué sirve?
 
-Cuando usas Codex con frecuencia, revisar manualmente cuánto queda del límite de 5 horas o del límite semanal es incómodo. Codex Usage Watcher automatiza esa revisión y te avisa por **ntfy** sin dejar un navegador pesado funcionando permanentemente.
+Cuando usas Codex con frecuencia, revisar manualmente cuánto queda del límite de 5 horas o del límite semanal es incómodo. Codex Usage Watcher automatiza esa revisión y te avisa por ntfy sin dejar un navegador pesado funcionando permanentemente.
 
 Por defecto puede avisar cuando:
 
 - queda 20%, 10% o 5% del límite de 5 horas;
 - queda 20%, 10% o 5% del límite semanal;
 - faltan aproximadamente 60, 30 o 15 minutos para un reset conocido;
-- detecta el comienzo de un nuevo ciclo por un salto grande del porcentaje restante;
+- detecta el inicio de un nuevo ciclo;
 - la sesión del perfil dedicado necesita atención.
 
 ## Ventajas
 
-- **Bajo consumo en reposo:** entre lecturas no queda Brave ni Python residente.
-- **Sin ventana molesta:** usa Brave normal para compatibilidad, pero Windows mantiene la ventana fuera de pantalla y oculta durante la captura.
-- **Perfil separado:** no interfiere con tu Brave habitual.
-- **Push al celular:** usa ntfy en Android o iPhone.
-- **Topic único:** una instalación nueva genera automáticamente un topic largo y aleatorio.
-- **Configuración local:** `config.json`, sesión de Brave y estados quedan en tu PC.
-- **Sin fechas hardcodeadas:** intenta leer las fechas de reset directamente desde la interfaz.
-- **Windows Task Scheduler:** la revisión se ejecuta automáticamente cada 10 minutos.
+- **Bajo consumo:** entre lecturas no queda navegador ni Python residente.
+- **Sin ventana molesta:** el navegador funciona en modo normal para compatibilidad, pero Windows lo oculta durante la captura.
+- **Multinavegador:** Brave, Chrome y Edge.
+- **Perfil separado por navegador:** no interfiere con tu navegación habitual.
+- **Push al celular:** ntfy en Android, iPhone/iPad o web.
+- **Topic único:** una instalación nueva puede generar automáticamente un topic largo y aleatorio.
+- **Configuración local:** `config.json`, sesión y estados permanecen en tu PC.
+- **Task Scheduler:** revisión automática cada 10 minutos.
 
 ## Requisitos
 
 - Windows 10 u 11.
-- Conexión a Internet.
-- Brave Browser.
-- Python 3.11+ (el instalador intenta instalar Python y Brave mediante `winget` si faltan).
-- Una cuenta de ChatGPT con acceso a Codex Usage.
+- Internet.
+- Brave, Google Chrome o Microsoft Edge.
+- Python 3.11+.
+- Cuenta de ChatGPT con acceso a Codex Usage.
 - Opcional pero recomendado: app **ntfy** en el celular.
 
-## Instalación rápida
+`INSTALL_WINDOWS.bat` intenta instalar Python mediante `winget` si falta. Si no encuentra ningún navegador compatible, intenta instalar Microsoft Edge.
 
-1. Descarga o clona este repositorio.
-2. Ejecuta `INSTALL_WINDOWS.bat`.
-3. El instalador prepara Python, dependencias, configuración y perfil dedicado.
-4. Si el perfil aún no está autenticado, Brave se abrirá **una sola vez**. Inicia sesión en ChatGPT, entra a Codex Usage, espera a ver tus porcentajes y cierra completamente esa ventana.
-5. El instalador vuelve a probar la captura y crea la tarea `CodexUsageWatcher` cada 10 minutos.
+## Instalación
 
-Después de instalar, puedes revisar el estado con:
+Descarga o clona el repositorio y ejecuta:
 
 ```text
-STATUS_WINDOWS.bat
+INSTALL_WINDOWS.bat
 ```
 
-Y quitar la automatización con:
+El instalador prepara las dependencias, crea el `config.json` local, configura ntfy, detecta los navegadores instalados, selecciona uno, crea su perfil dedicado, prueba la captura invisible y finalmente instala `CodexUsageWatcher` cada 10 minutos.
+
+Si el perfil todavía no está autenticado, el navegador elegido se abrirá **una sola vez** de forma visible. Inicia sesión en ChatGPT, abre Codex Usage, espera a ver los porcentajes y cierra completamente esa ventana.
+
+## Cambiar de navegador
+
+Ejecuta:
 
 ```text
-UNINSTALL_WINDOWS.bat
+CONFIGURE_BROWSER.bat
 ```
 
-## Configurar notificaciones en el celular con ntfy
+Puedes elegir cualquiera de los navegadores compatibles instalados. Después ejecuta `INSTALL_WINDOWS.bat` para autenticar el perfil dedicado del nuevo navegador y validar la captura.
 
-ntfy tiene aplicaciones para Android e iOS. También puede utilizarse desde web. Documentación oficial: <https://docs.ntfy.sh/subscribe/phone/>.
+## Configurar ntfy en el celular
 
-### 1. Instala ntfy
+Documentación oficial: <https://docs.ntfy.sh/>.
 
-- Android: Google Play, F-Droid o APK oficial.
-- iPhone/iPad: App Store.
+1. Instala ntfy en Android o iPhone/iPad.
+2. Ejecuta `CONFIGURE_NTFY.bat`.
+3. Copia el topic que muestra el watcher.
+4. En la app ntfy crea una suscripción usando **exactamente el mismo topic**.
+5. Usa `https://ntfy.sh` salvo que tengas un servidor propio.
+6. Desde `CONFIGURE_NTFY.bat`, envía una notificación de prueba.
 
-### 2. Obtén tu topic
-
-En una instalación nueva, `INSTALL_WINDOWS.bat` genera un topic parecido a:
+Ejemplo ilustrativo:
 
 ```text
 codex-usage-8f30e3a2b9c44e30a57f7c3ad5d63c52
 ```
 
-**Ese ejemplo no debes usarlo.** Tu instalación genera otro.
+No uses ese ejemplo: cada instalación debe generar su propio topic.
 
-Si quieres consultar, cambiar o regenerar tu topic:
+En `ntfy.sh`, trata un topic público como un identificador secreto: usa uno largo y difícil de adivinar.
 
-```text
-CONFIGURE_NTFY.bat
-```
-
-### 3. Suscríbete desde el celular
-
-Abre ntfy, agrega una suscripción y escribe **exactamente el mismo topic** que muestra el watcher. El servidor predeterminado es `https://ntfy.sh`.
-
-Los topics de `ntfy.sh` no necesitan crearse previamente; al suscribirte simplemente eliges el nombre. ntfy recomienda usar nombres difíciles de adivinar porque los topics públicos deben tratarse como identificadores secretos. Documentación: <https://docs.ntfy.sh/>.
-
-### 4. Prueba la notificación
-
-Ejecuta `CONFIGURE_NTFY.bat` y selecciona **Enviar notificación de prueba**. Deberías recibir un push en el teléfono.
-
-## Cómo funciona internamente
+## Cómo funciona
 
 ```text
 Task Scheduler (cada 10 min)
-          │
-          ▼
-      pythonw.exe
-          │
-          ▼
-Brave normal + perfil dedicado
-(ventana fuera de pantalla/oculta)
-          │
-          ▼
-  Codex Settings → Usage
-          │
-          ▼
- Chrome DevTools Protocol
-       en 127.0.0.1
-          │
-          ▼
+          |
+          v
+     pythonw.exe
+          |
+          v
+Brave / Chrome / Edge
+  + perfil dedicado
+  + ventana oculta
+          |
+          v
+Codex Settings -> Usage
+          |
+          v
+Chrome DevTools Protocol
+   solo en 127.0.0.1
+          |
+          v
    parser de porcentajes
-          │
-    ┌─────┴─────┐
-    ▼           ▼
-codex_usage   ntfy push
-   .json       al celular
-          │
-          ▼
- Brave y Python terminan
+      /           \
+     v             v
+codex_usage.json   ntfy push
+          |
+          v
+navegador y Python terminan
 ```
-
-La captura usa un puerto de DevTools dinámico y enlazado a `127.0.0.1`. No queda un servidor DevTools expuesto a la red.
 
 ## Archivos locales que NO se publican
 
-Este repositorio **no contiene `config.json`**. Cada instalación crea el suyo a partir de `config.example.json`. También están ignorados:
+El repositorio **no contiene `config.json`**. Cada instalación crea el suyo desde `config.example.json`.
+
+También están ignorados:
 
 ```text
 config.json
@@ -139,33 +138,34 @@ hidden_error_state.json
 last_page_text.txt
 ```
 
-No subas estos archivos a GitHub: `runtime/` contiene el perfil dedicado de Brave y `config.json` puede contener el topic o token de ntfy.
+`runtime/browser_profiles/` contiene los perfiles dedicados y puede conservar sesiones autenticadas. No lo publiques.
 
 ## Configuración avanzada
 
-`config.example.json` contiene los valores predeterminados. Después de instalar, puedes editar tu `config.json` local.
-
-Ejemplo de umbrales:
+### Navegador
 
 ```json
-{
-  "alerts": {
-    "five_hour_remaining_percent": [20, 10, 5],
-    "weekly_remaining_percent": [20, 10, 5],
-    "reset_minutes": [60, 30, 15]
-  }
+"browser": {
+  "preferred": "auto",
+  "selected": "",
+  "profile_root": "runtime/browser_profiles",
+  "profile_dir": ""
 }
 ```
 
-La zona horaria predeterminada es:
+`selected` puede ser `brave`, `chrome` o `edge`.
+
+### Alertas
 
 ```json
-"timezone": "local"
+"alerts": {
+  "five_hour_remaining_percent": [20, 10, 5],
+  "weekly_remaining_percent": [20, 10, 5],
+  "reset_minutes": [60, 30, 15]
+}
 ```
 
-por lo que se utiliza la zona horaria configurada en Windows. También puedes indicar un identificador IANA compatible con Python.
-
-Para ntfy:
+### ntfy
 
 ```json
 "ntfy": {
@@ -176,49 +176,47 @@ Para ntfy:
 }
 ```
 
-El campo `token` es opcional y está pensado para servidores/configuraciones ntfy que requieran autenticación.
-
 ## Solución de problemas
 
-### `PASS: 5h=... weekly=...`
+### `PASS [Google Chrome]: 5h=... weekly=...`
 
-La captura funciona correctamente.
+La captura funciona. El texto entre corchetes indica qué navegador está usando.
 
 ### `stage: authentication`
 
-La sesión del perfil dedicado expiró. Ejecuta nuevamente `INSTALL_WINDOWS.bat` o abre el perfil dedicado desde el flujo de instalación y vuelve a iniciar sesión.
+Ejecuta `INSTALL_WINDOWS.bat` y vuelve a iniciar sesión en el perfil dedicado cuando se abra el navegador.
 
 ### `stage: challenge` / “Un momento…”
 
-El sitio está mostrando una verificación. El watcher no intenta saltársela. Abre el perfil dedicado de forma visible, completa lo que el sitio solicite y vuelve a probar.
+El watcher no intenta saltarse una verificación. Ejecuta `INSTALL_WINDOWS.bat`, completa la verificación visible y vuelve a probar.
+
+### Quiero usar otro navegador
+
+Ejecuta `CONFIGURE_BROWSER.bat` y después `INSTALL_WINDOWS.bat`.
 
 ### No llegan notificaciones
 
-1. Ejecuta `CONFIGURE_NTFY.bat`.
-2. Confirma que ntfy esté activado.
-3. Verifica que el topic del PC y del teléfono sea idéntico.
-4. Envía una notificación de prueba.
-5. Revisa permisos de notificación/batería de ntfy en el teléfono.
+Ejecuta `CONFIGURE_NTFY.bat`, revisa que el topic del PC y celular coincida exactamente y envía una prueba.
 
 ### El PC está apagado
 
-No habrá lecturas mientras el PC esté apagado. Esta herramienta es local; necesita que Windows esté encendido para ejecutar la tarea.
+No habrá lecturas. Esta es una herramienta local.
 
 ## Privacidad y seguridad
 
-Lee [SECURITY.md](SECURITY.md). En resumen: no publiques tu `config.json`, topic/token de ntfy ni la carpeta `runtime/`. El perfil dedicado mantiene la sesión de ChatGPT en tu propio PC.
+Consulta [SECURITY.md](SECURITY.md). No publiques `config.json`, `runtime/`, cookies, tokens ni logs con información sensible.
 
 ## Limitaciones
 
 - Solo Windows.
-- Actualmente está orientado a Brave.
-- Depende de la estructura/texto de la interfaz de Codex Usage.
-- No es un producto oficial de OpenAI ni de ntfy.
-- No puede obtener datos nuevos con el PC apagado.
+- Navegadores implementados: Brave, Google Chrome y Microsoft Edge.
+- Depende de la estructura/texto actual de Codex Usage.
+- No es un producto oficial de OpenAI, Brave, Google, Microsoft ni ntfy.
+- No obtiene datos nuevos con el PC apagado.
 
 ## Contribuir
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md). Issues y pull requests son bienvenidos.
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licencia
 

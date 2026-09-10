@@ -17,7 +17,7 @@ try:
 except Exception:
     websocket = None
 
-from brave_common import APP_DIR, find_brave, profile_dir_from_config
+from browser_common import APP_DIR, find_browser, profile_dir_for_browser
 import codex_usage_server as core
 
 STATUS_PATH = APP_DIR / "hidden_last_run.json"
@@ -257,7 +257,7 @@ def terminate_tree(proc):
 
 def process_capture(text: str, url: str, cfg: dict):
     data = core.parse_page_text(text, cfg)
-    data["source"] = "codex_usage_brave_hidden"
+    data["source"] = "codex_usage_browser_hidden"
     data["browser_url"] = url
     data["hidden_captured_at"] = datetime.now().astimezone().isoformat()
     core.save_json(core.output_path(cfg), data)
@@ -268,12 +268,11 @@ def process_capture(text: str, url: str, cfg: dict):
 def main():
     started = time.time()
     cfg = core.load_config()
-    brave = find_brave()
-    profile = profile_dir_from_config(cfg)
-
-    if not brave:
-        save_status({"ok": False, "stage": "startup", "error": "Brave no encontrado"})
+    browser = find_browser(cfg)
+    if not browser:
+        save_status({"ok": False, "stage": "startup", "error": "No encontré Brave, Google Chrome ni Microsoft Edge seleccionados"})
         return 2
+    profile = profile_dir_for_browser(cfg, browser["key"])
     if websocket is None:
         save_status({"ok": False, "stage": "startup", "error": "websocket-client no instalado"})
         return 3
@@ -297,7 +296,7 @@ def main():
         pass
 
     args = [
-        str(brave),
+        str(browser["exe"]),
         f"--user-data-dir={profile}",
         "--remote-debugging-port=0",
         "--remote-debugging-address=127.0.0.1",
@@ -359,6 +358,8 @@ def main():
                     "ok": True,
                     "stage": "complete",
                     "mode": "headed_hidden",
+                    "browser": browser["key"],
+                    "browser_name": browser["display_name"],
                     "duration_seconds": round(time.time() - started, 2),
                     "five_hour_remaining": (data.get("five_hour") or {}).get("remaining_percent"),
                     "weekly_remaining": (data.get("weekly") or {}).get("remaining_percent"),
@@ -368,7 +369,7 @@ def main():
                     "profile_dir": str(profile),
                     "windows_hidden": hider.hidden_count if hider else 0,
                 })
-                print("PASS:",
+                print(f"PASS [{browser['display_name']}]:",
                       f"5h={(data.get('five_hour') or {}).get('remaining_percent')}%",
                       f"weekly={(data.get('weekly') or {}).get('remaining_percent')}%",
                       f"{round(time.time()-started,1)}s")
@@ -380,8 +381,8 @@ def main():
                              "error": login, "page_title": title, "page_url": last_page.get("href"),
                              "text_preview": text[:1000], "profile_dir": str(profile)})
                 notify_error_once(cfg, "hidden_auth", "⚠️ Codex Watcher necesita atención",
-                                  login + " Ejecuta setup_dedicated_profile_windows.bat.")
-                print("AUTH:", login)
+                                  login + " Ejecuta INSTALL_WINDOWS.bat para volver a autenticar el perfil dedicado.")
+                print(f"AUTH [{browser['display_name']}]:", login)
                 return 10
 
             challenge = challenge_hint(text, title)
@@ -395,7 +396,7 @@ def main():
                                  "text_preview": text[:1000], "profile_dir": str(profile)})
                     notify_error_once(cfg, "hidden_challenge", "⚠️ Codex Watcher bloqueado",
                                       "La verificación de ChatGPT no avanzó automáticamente. Abre una vez el perfil dedicado.")
-                    print("CHALLENGE:", challenge)
+                    print(f"CHALLENGE [{browser['display_name']}]:", challenge)
                     return 11
             else:
                 challenge_first = None

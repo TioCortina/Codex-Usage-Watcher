@@ -1,23 +1,30 @@
-# Seguridad y privacidad
+# Security
 
-Codex Usage Watcher es una utilidad local y no oficial.
+Codex Usage Watcher utiliza un perfil dedicado del navegador seleccionado para acceder a la página de Codex Usage.
 
-## Datos que permanecen en el PC
+## No publiques
 
-- `config.json` (incluye el topic de ntfy y, si se configura, un token).
-- `runtime/brave_codex_profile/` (perfil dedicado de Brave con la sesión de ChatGPT).
-- `codex_usage.json`, `hidden_last_run.json` y otros archivos de estado.
+- `config.json`
+- `runtime/`
+- `.venv/`
+- cookies o datos de sesión
+- `codex_usage.json`
+- `watcher_state.json`
+- `hidden_last_run.json`
+- `hidden_error_state.json`
+- `last_page_text.txt`
+- topics privados o tokens de ntfy
 
-Todos estos archivos están ignorados por Git y **no deben publicarse**.
+`runtime/browser_profiles/` puede contener sesiones autenticadas de ChatGPT para Brave, Google Chrome o Microsoft Edge.
+
+## DevTools
+
+La captura abre Chrome DevTools Protocol únicamente sobre `127.0.0.1` y utiliza un puerto dinámico. El navegador termina después de cada lectura.
 
 ## ntfy
 
-Los topics públicos de `ntfy.sh` funcionan como identificadores compartidos: cualquiera que conozca un topic puede, en principio, acceder a él. Usa un nombre largo y aleatorio y no lo publiques. El instalador genera uno automáticamente. Para mayor control puedes usar un servidor ntfy propio o un token compatible editando `config.json`.
+En servidores públicos como `ntfy.sh`, considera el topic un identificador secreto y usa nombres largos y aleatorios.
 
-## Sesión de ChatGPT
+## Reportar vulnerabilidades
 
-La utilidad no pide ni almacena tu contraseña directamente. La autenticación queda dentro del perfil dedicado de Brave. Protege tu cuenta de Windows y no compartas la carpeta `runtime/`.
-
-## Reportar problemas
-
-Antes de adjuntar logs o JSON a un issue, elimina topics, tokens, rutas personales y cualquier dato de sesión.
+No publiques credenciales, cookies ni tokens en issues. Elimina datos sensibles de logs o capturas antes de compartirlos.

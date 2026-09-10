@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0
+
+- Soporte para Brave, Google Chrome y Microsoft Edge.
+- Detección del navegador predeterminado compatible.
+- Nuevo `CONFIGURE_BROWSER.bat`.
+- Perfil dedicado independiente por navegador.
+- Migración compatible con perfiles Brave de versiones anteriores.
+- Instalador único actualizado para selección multinavegador.
+- Documentación y guía de seguridad actualizadas.
+
 ## 3.0 Public
 
 - Edición Windows-only.

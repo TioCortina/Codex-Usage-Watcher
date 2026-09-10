@@ -1,110 +1,89 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title Codex Usage Watcher v3.0 - Instalador Windows
+title Codex Usage Watcher v3.1 - Instalador Windows
 cd /d "%~dp0"
 
 echo.
 echo ============================================================
-echo       CODEX USAGE WATCHER v3.0 - WINDOWS
+echo       CODEX USAGE WATCHER v3.1 - WINDOWS
 echo              INSTALACION AUTOMATICA
 echo ============================================================
 echo.
-echo Este instalador:
-echo   - prepara Python y dependencias
-echo   - conserva/migra tu config y ntfy
-echo   - reutiliza tu perfil dedicado de Brave
-echo   - prueba la captura invisible
-echo   - instala la tarea automatica cada 10 minutos
+echo Navegadores compatibles:
+echo   - Brave
+echo   - Google Chrome
+echo   - Microsoft Edge
 echo.
-echo No instala nada de macOS.
+echo El instalador usa el navegador predeterminado si es compatible.
+echo Si hace falta, podras elegir sin salir de este BAT.
 echo.
 
-REM ------------------------------------------------------------
-REM 1) Encontrar Python. Si falta, intentar instalarlo con winget.
-REM ------------------------------------------------------------
 set "PY_CMD="
-
 where py >nul 2>&1
-if not errorlevel 1 (
-    set "PY_CMD=py"
-)
-
+if not errorlevel 1 set "PY_CMD=py"
 if not defined PY_CMD (
     where python >nul 2>&1
-    if not errorlevel 1 (
-        set "PY_CMD=python"
-    )
+    if not errorlevel 1 set "PY_CMD=python"
 )
 
 if not defined PY_CMD (
-    echo [1/7] Python no encontrado. Intentando instalar Python 3 con winget...
+    echo [1/8] Python no encontrado. Intentando instalar Python 3.12 con winget...
     where winget >nul 2>&1
     if errorlevel 1 (
-        echo.
-        echo ERROR: Python no esta instalado y winget no esta disponible.
-        echo Instala Python 3.11 o superior y vuelve a ejecutar este BAT.
-        echo.
+        echo ERROR: instala Python 3.11 o superior.
         pause
         exit /b 1
     )
-
     winget install -e --id Python.Python.3.12 --accept-package-agreements --accept-source-agreements
     if errorlevel 1 (
-        echo.
         echo ERROR: winget no pudo instalar Python.
         pause
         exit /b 1
     )
-
-    REM Refrescar PATH de la sesion actual de forma simple.
     set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;%PATH%"
-
     where python >nul 2>&1
     if not errorlevel 1 set "PY_CMD=python"
     where py >nul 2>&1
     if not errorlevel 1 set "PY_CMD=py"
-
     if not defined PY_CMD (
         echo Python se instalo, pero esta consola aun no lo ve.
-        echo Cierra esta ventana y vuelve a ejecutar INSTALL_WINDOWS.bat.
+        echo Cierra esta ventana y ejecuta INSTALL_WINDOWS.bat nuevamente.
         pause
         exit /b 1
     )
 ) else (
-    echo [1/7] Python encontrado.
+    echo [1/8] Python encontrado.
 )
 
-REM ------------------------------------------------------------
-REM 2) Brave
-REM ------------------------------------------------------------
-echo [2/7] Comprobando Brave...
-set "BRAVE_FOUND=0"
-if exist "%ProgramFiles%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BRAVE_FOUND=1"
-if exist "%ProgramFiles(x86)%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BRAVE_FOUND=1"
-if exist "%LOCALAPPDATA%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BRAVE_FOUND=1"
+echo [2/8] Comprobando navegadores compatibles...
+set "BROWSER_FOUND=0"
+if exist "%ProgramFiles%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BROWSER_FOUND=1"
+if exist "%ProgramFiles(x86)%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BROWSER_FOUND=1"
+if exist "%LOCALAPPDATA%\BraveSoftware\Brave-Browser\Application\brave.exe" set "BROWSER_FOUND=1"
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "BROWSER_FOUND=1"
+if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" set "BROWSER_FOUND=1"
+if exist "%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe" set "BROWSER_FOUND=1"
+if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" set "BROWSER_FOUND=1"
+if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" set "BROWSER_FOUND=1"
+if exist "%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe" set "BROWSER_FOUND=1"
 
-if "%BRAVE_FOUND%"=="0" (
-    echo Brave no encontrado. Intentando instalarlo con winget...
+if "%BROWSER_FOUND%"=="0" (
+    echo No encontre Brave, Chrome ni Edge. Intentando instalar Microsoft Edge...
     where winget >nul 2>&1
     if errorlevel 1 (
-        echo ERROR: Brave no esta instalado y winget no esta disponible.
+        echo ERROR: instala Brave, Google Chrome o Microsoft Edge.
         pause
         exit /b 1
     )
-    winget install -e --id Brave.Brave --accept-package-agreements --accept-source-agreements
+    winget install -e --id Microsoft.Edge --accept-package-agreements --accept-source-agreements
     if errorlevel 1 (
-        echo ERROR: No pude instalar Brave automaticamente.
+        echo ERROR: instala manualmente Brave, Google Chrome o Microsoft Edge.
         pause
         exit /b 1
     )
-) else (
-    echo       Brave encontrado.
 )
 
-REM ------------------------------------------------------------
-REM 3) venv
-REM ------------------------------------------------------------
-echo [3/7] Preparando entorno Python...
+echo [3/8] Preparando entorno Python...
 if not exist ".venv\Scripts\python.exe" (
     %PY_CMD% -m venv ".venv"
     if errorlevel 1 (
@@ -113,14 +92,8 @@ if not exist ".venv\Scripts\python.exe" (
         exit /b 1
     )
 )
-
 ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check --quiet --upgrade pip
-if errorlevel 1 (
-    echo ERROR actualizando pip.
-    pause
-    exit /b 1
-)
-
+if errorlevel 1 exit /b 1
 ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check --quiet -r requirements.txt
 if errorlevel 1 (
     echo ERROR instalando dependencias.
@@ -128,19 +101,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM ------------------------------------------------------------
-REM 4) Config + profile migration
-REM ------------------------------------------------------------
-echo [4/7] Preparando configuracion, ntfy y perfil dedicado...
+echo [4/8] Preparando configuracion y ntfy...
 ".venv\Scripts\python.exe" bootstrap_windows.py
 if errorlevel 1 (
     echo ERROR preparando configuracion.
     pause
     exit /b 1
 )
-
-echo.
-echo Configurando notificaciones ntfy...
 ".venv\Scripts\python.exe" configure_ntfy.py --ensure
 if errorlevel 1 (
     echo ERROR preparando ntfy.
@@ -148,11 +115,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM ------------------------------------------------------------
-REM 5) First invisible test
-REM ------------------------------------------------------------
 echo.
-echo [5/7] Probando captura invisible...
+echo [5/8] Seleccionando navegador...
+".venv\Scripts\python.exe" configure_browser.py --ensure --interactive
+if errorlevel 1 (
+    echo ERROR seleccionando navegador.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [6/8] Probando captura invisible...
 ".venv\Scripts\python.exe" installer_test_capture.py
 set "TEST_RC=!errorlevel!"
 
@@ -162,21 +135,14 @@ if "!TEST_RC!"=="0" (
 )
 
 if not "!TEST_RC!"=="20" (
-    echo.
-    echo ERROR: la prueba fallo por un problema tecnico.
-    echo Revisa hidden_last_run.json.
-    echo.
+    echo ERROR: la prueba fallo. Revisa hidden_last_run.json.
     pause
     exit /b !TEST_RC!
 )
 
-REM ------------------------------------------------------------
-REM Authentication only if needed
-REM ------------------------------------------------------------
 echo.
-echo La captura necesita autenticar/verificar el perfil dedicado.
-echo Se abrira Brave UNA SOLA VEZ de forma visible.
-echo.
+echo El perfil dedicado necesita autenticacion o verificacion.
+echo Se abrira UNA SOLA VEZ el navegador seleccionado.
 ".venv\Scripts\python.exe" open_auth_profile_windows.py
 if errorlevel 1 (
     echo ERROR abriendo el perfil dedicado.
@@ -186,43 +152,33 @@ if errorlevel 1 (
 
 echo.
 echo ------------------------------------------------------------
-echo EN BRAVE:
+echo EN EL NAVEGADOR:
 echo   1. Inicia sesion en ChatGPT si te lo pide.
-echo   2. Espera a ver los porcentajes de Codex Usage.
-echo   3. CIERRA COMPLETAMENTE esa ventana de Brave.
+echo   2. Espera hasta ver los porcentajes de Codex Usage.
+echo   3. CIERRA COMPLETAMENTE esa ventana.
 echo ------------------------------------------------------------
 echo.
 pause
 
-echo.
-echo [6/7] Repitiendo prueba invisible...
+echo [7/8] Repitiendo prueba invisible...
 ".venv\Scripts\python.exe" installer_test_capture.py
 if errorlevel 1 (
-    echo.
-    echo ERROR: la captura invisible sigue sin funcionar.
-    echo Revisa hidden_last_run.json.
-    echo.
+    echo ERROR: la captura sigue sin funcionar. Revisa hidden_last_run.json.
     pause
     exit /b 1
 )
-
 echo       Captura invisible: OK
 
 :INSTALL_TASK
-REM ------------------------------------------------------------
-REM 7) Scheduled task
-REM ------------------------------------------------------------
 echo.
-echo [7/7] Instalando automatizacion cada 10 minutos...
+echo [8/8] Instalando automatizacion cada 10 minutos...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\install_task_windows.ps1" -AppDir "%CD%"
 if errorlevel 1 (
-    echo.
     echo ERROR instalando la tarea de Windows.
     pause
     exit /b 1
 )
 
-REM Launch final background sample with pythonw.
 start "" /b ".venv\Scripts\pythonw.exe" "codex_hidden_capture.py"
 
 echo.
@@ -232,12 +188,13 @@ echo ============================================================
 echo.
 echo Tarea: CodexUsageWatcher
 echo Frecuencia: cada 10 minutos
-echo Navegador: Brave normal oculto
-echo En reposo: no queda Brave ni Python ejecutandose
-echo ntfy: topic local creado o conservado automaticamente
-echo Para cambiarlo o probarlo: CONFIGURE_NTFY.bat
+echo Navegadores: Brave / Google Chrome / Microsoft Edge
+echo En reposo: no queda navegador ni Python ejecutandose
 echo.
-echo Puedes usar STATUS_WINDOWS.bat para revisar el estado.
+echo CONFIGURE_BROWSER.bat = cambiar navegador
+echo CONFIGURE_NTFY.bat    = configurar/probar notificaciones
+echo STATUS_WINDOWS.bat    = revisar estado
+echo UNINSTALL_WINDOWS.bat = quitar automatizacion
 echo.
 pause
 exit /b 0

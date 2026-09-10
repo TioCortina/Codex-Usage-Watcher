@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 import json
 import subprocess
-from pathlib import Path
 
-from brave_common import APP_DIR, find_brave, profile_dir_from_config
+from browser_common import APP_DIR, find_browser, profile_dir_for_browser
 
 CONFIG = APP_DIR / "config.json"
 URL = "https://chatgpt.com/codex/settings/usage"
+
 
 def load_config():
     try:
@@ -15,26 +16,29 @@ def load_config():
     except Exception:
         return {}
 
+
 def main():
-    brave = find_brave()
-    if not brave:
-        print("ERROR: Brave no está instalado.")
+    cfg = load_config()
+    browser = find_browser(cfg)
+
+    if not browser:
+        print("ERROR: no encontré el navegador seleccionado.")
+        print("Ejecuta CONFIGURE_BROWSER.bat.")
         return 2
 
-    cfg = load_config()
-    profile = profile_dir_from_config(cfg)
+    profile = profile_dir_for_browser(cfg, browser["key"])
     profile.mkdir(parents=True, exist_ok=True)
 
     print()
-    print("Se abrirá UNA ventana visible de Brave para autenticar Codex Watcher.")
+    print(f"Se abrirá UNA ventana visible de {browser['display_name']} para autenticar Codex Watcher.")
     print("1) Inicia sesión en ChatGPT si hace falta.")
     print("2) Confirma que Codex Usage muestre tus porcentajes.")
-    print("3) CIERRA COMPLETAMENTE esa ventana de Brave.")
+    print(f"3) CIERRA COMPLETAMENTE esa ventana de {browser['display_name']}.")
     print("4) Vuelve a esta consola y presiona una tecla.")
     print()
 
     subprocess.Popen([
-        str(brave),
+        str(browser["exe"]),
         f"--user-data-dir={profile}",
         "--no-first-run",
         "--no-default-browser-check",
@@ -42,6 +46,7 @@ def main():
         URL,
     ])
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

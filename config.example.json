@@ -34,10 +34,9 @@
   "capture_interval_minutes": 10,
   "background_capture": {
     "enabled": true,
-    "strategy": "brave_headed_hidden_cdp",
+    "strategy": "chromium_headed_hidden_cdp",
     "headless": false,
-    "dedicated_profile_dir": "runtime/brave_codex_profile",
-    "note": "Brave se ejecuta en modo normal pero oculto por Windows; no queda residente entre lecturas."
+    "note": "Compatible con Brave, Google Chrome y Microsoft Edge. Usa un perfil dedicado y oculta la ventana durante la captura."
   },
   "hidden_browser": {
     "capture_timeout_seconds": 60,
@@ -50,5 +49,11 @@
     "challenge_grace_seconds": 45,
     "notify_auth_error": true,
     "auth_error_cooldown_hours": 12
+  },
+  "browser": {
+    "preferred": "auto",
+    "selected": "",
+    "profile_root": "runtime/browser_profiles",
+    "profile_dir": ""
   }
 }
