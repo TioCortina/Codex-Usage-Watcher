@@ -1,0 +1,26 @@
+# Secrets / user config
+config.json
+*.local.json
+.env
+.env.*
+
+# Authenticated browser profile
+runtime/
+
+# Runtime state
+codex_usage.json
+watcher_state.json
+last_page_text.txt
+hidden_last_run.json
+hidden_error_state.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# OS / IDE
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/

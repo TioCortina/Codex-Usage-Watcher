@@ -1,0 +1,54 @@
+{
+  "timezone": "local",
+  "local_port": 8765,
+  "output_path": "codex_usage.json",
+  "reset_detection_jump_percent": 25,
+  "weekly_reset_detection": {
+    "enabled": true,
+    "method": "dynamic_ui_date_change_or_remaining_jump",
+    "note": "No hardcodea fechas. Usa lo que Codex muestre en cada lectura."
+  },
+  "alerts": {
+    "five_hour_remaining_percent": [
+      20,
+      10,
+      5
+    ],
+    "weekly_remaining_percent": [
+      20,
+      10,
+      5
+    ],
+    "reset_minutes": [
+      60,
+      30,
+      15
+    ]
+  },
+  "ntfy": {
+    "enabled": false,
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "token": ""
+  },
+  "capture_interval_minutes": 10,
+  "background_capture": {
+    "enabled": true,
+    "strategy": "brave_headed_hidden_cdp",
+    "headless": false,
+    "dedicated_profile_dir": "runtime/brave_codex_profile",
+    "note": "Brave se ejecuta en modo normal pero oculto por Windows; no queda residente entre lecturas."
+  },
+  "hidden_browser": {
+    "capture_timeout_seconds": 60,
+    "poll_interval_seconds": 1.0,
+    "hide_window_poll_ms": 80,
+    "offscreen_x": -32000,
+    "offscreen_y": -32000,
+    "window_width": 900,
+    "window_height": 700,
+    "challenge_grace_seconds": 45,
+    "notify_auth_error": true,
+    "auth_error_cooldown_hours": 12
+  }
+}
